@@ -1,0 +1,113 @@
+Create a templates folder first and then add that code file in that folder.
+=========================================================================
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="icon"sizes="48x48" href="{{ url_for('static', filename='A better Tomorrow Starts Today.png') }}" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+  <title>Upload Video File</title>
+  <style>
+    .container {
+      padding-top: 40px;
+    }
+    .form-upload {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-upload {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-upload:hover {
+      background-color: #0056b3;
+    }
+    .loader {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 30px;
+      height: 30px;
+      -webkit-animation: spin 2s linear infinite; /* Safari */
+      animation: spin 2s linear infinite;
+    }
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">Upload a Video or Audio File</h1>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form action="/speech-to-text" method="post" enctype="multipart/form-data" class="form-upload" id="uploadForm">
+          <div class="form-group">
+            <label for="videoFile">Video file</label>
+            <input type="file" name="file" id="videoFile" class="form-control-file" accept="video/mp4">
+          </div>
+          <div class="form-group">
+            <label for="audioFile">Audio file</label>
+            <input type="file" name="file" id="audioFile" class="form-control-file" accept="audio/mp3">
+          </div>
+          <button type="submit" class="btn btn-upload btn-block">Upload</button>
+          <div class="loader" id="loader"></div>
+        </form>
+        <div id="transcriptionContainer" style="display:none;">
+          <h2>Transcription Result:</h2>
+          <div id="transcriptionResult" style="font-family: 'Lato', sans-serif; text-align: justify;"></div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    document.getElementById('uploadForm').onsubmit = function() {
+      document.getElementById('loader').style.display = 'block';
+    };
+    document.getElementById('videoFile').onchange = function() {
+      document.getElementById('audioFile').disabled = this.files.length > 0;
+    };
+    document.getElementById('audioFile').onchange = function() {
+      document.getElementById('videoFile').disabled = this.files.length > 0;
+    };
+
+    document.getElementById('uploadForm').onsubmit = function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+    document.getElementById('loader').style.display = 'block';
+    
+    var formData = new FormData(this); // Create a FormData object, passing the form as a parameter
+    fetch('/speech-to-text', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('transcriptionContainer').style.display = 'block';
+      document.getElementById('transcriptionResult').innerText = data.transcript; // Display the transcription
+    })
+    .catch(error => console.error('Error:', error));
+  };
+  </script>
+
+  <!-- Bootstrap JS, Popper.js, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
